@@ -1,6 +1,129 @@
-  $dark: #27241d;
-  $dark2: #423d33;
-  $dark3: #504a40;
-  $dark4: #625d52;
-  $light: #e8e6e1;
-  $light2: #d3cec4;
+$app-bg: #ede4d4;
+$surface: #faf6ee;
+$surface-soft: #f2eadc;
+$surface-raised: rgba(250, 246, 238, 0.84);
+
+$dark: #ede4d4;
+$dark-elevated: #faf6ee;
+$dark-surface: #e5d9c7;
+$dark-hover: #d8c8b2;
+$dark2: #e5d9c7;
+$dark3: #d8c8b2;
+$dark4: #faf6ee;
+
+$accent-primary: #8f5d3d;
+$accent-secondary: #a86f48;
+$accent-success: #6f8f5d;
+$accent-warm: #bd8a42;
+$accent-cool: #5e7465;
+$accent-error: #b55245;
+
+$light: #342d26;
+$light-secondary: #6a5b4c;
+$light-tertiary: #94816d;
+$light2: #6a5b4c;
+$light3: #94816d;
+
+$text-primary: #342d26;
+$text-secondary: #6a5b4c;
+$text-muted: #82705e;
+$text-tertiary: #a6937d;
+$text-inverse: #ffffff;
+
+$font-family-base: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", "Segoe UI", Roboto, sans-serif;
+$font-family-mono: "SF Mono", "Monaco", "Menlo", "Consolas", monospace;
+
+$font-size-xs: 0.75rem;
+$font-size-sm: 0.875rem;
+$font-size-base: 1rem;
+$font-size-lg: 1.125rem;
+$font-size-xl: 1.45rem;
+$font-size-2xl: 2rem;
+
+$font-weight-regular: 400;
+$font-weight-medium: 500;
+$font-weight-semibold: 650;
+$font-weight-bold: 750;
+
+$spacing-unit: 4px;
+$spacing-xs: $spacing-unit;
+$spacing-sm: $spacing-unit * 2;
+$spacing-md: $spacing-unit * 4;
+$spacing-lg: $spacing-unit * 6;
+$spacing-xl: $spacing-unit * 8;
+
+$border-radius-sm: 8px;
+$border-radius-md: 12px;
+$border-radius-lg: 16px;
+$border-radius-xl: 20px;
+$border-radius-full: 9999px;
+
+$border-color: rgba(82, 65, 48, 0.14);
+
+$shadow-sm: 0 1px 2px rgba(52, 45, 38, 0.06), 0 8px 24px rgba(52, 45, 38, 0.06);
+$shadow-md: 0 12px 34px rgba(52, 45, 38, 0.11);
+$shadow-lg: 0 20px 50px rgba(52, 45, 38, 0.16);
+
+$transition-fast: 150ms ease;
+$transition-base: 240ms ease;
+$transition-slow: 400ms ease;
+$transition-spring: 420ms cubic-bezier(0.2, 0.8, 0.2, 1);
+
+$header-height: 78px;
+$toolbar-width: 220px;
+$z-sticky: 200;
+$z-modal: 1000;
+
+@mixin button-reset {
+	all: unset;
+	box-sizing: border-box;
+	cursor: pointer;
+}
+
+* {
+	box-sizing: border-box;
+}
+
+html,
+body,
+#app {
+	min-height: 100%;
+}
+
+body {
+	font-family: $font-family-base;
+	color: $text-primary;
+	background: $app-bg;
+	-webkit-font-smoothing: antialiased;
+	text-rendering: optimizeLegibility;
+}
+
+button,
+input {
+	font-family: inherit;
+}
+
+.overflow-hidden {
+	overflow: hidden;
+}
+
+@keyframes fadeIn {
+	from { opacity: 0; }
+	to { opacity: 1; }
+}
+
+@keyframes scaleIn {
+	from {
+		opacity: 0;
+		transform: scale(0.97);
+	}
+	to {
+		opacity: 1;
+		transform: scale(1);
+	}
+}
+
+@keyframes spin {
+	from { transform: rotate(0deg); }
+	to { transform: rotate(360deg); }
+}

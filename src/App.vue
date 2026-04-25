@@ -18,6 +18,7 @@
 	import ButhiGuideModal from "./components/ButhiGuideModal.vue";
 	import ButhiMapModal from "./components/ButhiMapModal.vue";
 	import ButhiMain from "./components/ButhiMain.vue";
+	import { getObservations, getObservationCount } from "./services/inaturalist";
 
 	export default {
 		name: "App",
@@ -39,6 +40,7 @@
 				anyOn: false,
 				dateSwitchOn: false,
 				userSwitchOn: false,
+				genusSwitchOn: false,
 				orderSwitchOn: false,
 				familySwitchOn: false,
 
@@ -61,6 +63,11 @@
 				secondname: "",
 				thirdname: "",
 				fourthname: "",
+
+				firstRevealName: "",
+				secondRevealName: "",
+				thirdRevealName: "",
+				fourthRevealName: "",
 
 				firstOrder: "",
 				secondOrder: "",
@@ -124,102 +131,26 @@
 		methods: {
 			changePic() {
 				if (this.timesExecuted < 300) {
-					this.getRandomPageObsNums();
 					this.timesExecuted++;
-					this.checkNames();
-
-					var firstLink =
-						this.apiResult[0].results[this.firstPageNum].photos[0].url;
-					this.first = this.getMedium(firstLink);
-					this.firstname =
-						this.apiResult[0].results[this.firstPageNum].taxon.name;
-					this.firstDate =
-						this.apiResult[0].results[this.firstPageNum].observed_on;
-					this.firstUser =
-						this.apiResult[0].results[this.firstPageNum].user.login;
-					this.firstLink = this.apiResult[0].results[this.firstPageNum].uri;
-
-					var secondLink =
-						this.apiResult[1].results[this.secondPageNum].photos[0].url;
-					this.second = this.getMedium(secondLink);
-					this.secondname =
-						this.apiResult[1].results[this.secondPageNum].taxon.name;
-					this.secondDate =
-						this.apiResult[1].results[this.secondPageNum].observed_on;
-					this.secondUser =
-						this.apiResult[1].results[this.secondPageNum].user.login;
-					this.secondLink = this.apiResult[1].results[this.secondPageNum].uri;
-
-					var thirdLink =
-						this.apiResult[2].results[this.thirdPageNum].photos[0].url;
-					this.third = this.getMedium(thirdLink);
-					this.thirdname =
-						this.apiResult[2].results[this.thirdPageNum].taxon.name;
-					this.thirdDate =
-						this.apiResult[2].results[this.thirdPageNum].observed_on;
-					this.thirdUser =
-						this.apiResult[2].results[this.thirdPageNum].user.login;
-					this.thirdLink = this.apiResult[2].results[this.thirdPageNum].uri;
-
-					var fourthLink =
-						this.apiResult[3].results[this.fourthPageNum].photos[0].url;
-					this.fourth = this.getMedium(fourthLink);
-					this.fourthname =
-						this.apiResult[3].results[this.fourthPageNum].taxon.name;
-					this.fourthDate =
-						this.apiResult[3].results[this.fourthPageNum].observed_on;
-					this.fourthUser =
-						this.apiResult[3].results[this.fourthPageNum].user.login;
-					this.fourthLink = this.apiResult[3].results[this.fourthPageNum].uri;
-
-					if(this.orderSwitchOn) {
-						this.setOrders();
-						
-						this.firstname = this.firstOrder;
-						this.secondname = this.secondOrder;
-						this.thirdname = this.thirdOrder;
-						this.fourthname = this.fourthOrder;
-					}
-					if(this.familySwitchOn) {
-						this.setFamilies();
-						
-						this.firstname = this.firstFamily;
-						this.secondname = this.secondFamily;
-						this.thirdname = this.thirdFamily;
-						this.fourthname = this.fourthFamily;
+					const selectedObservations = this.selectRoundObservations();
+					if (selectedObservations.length < 4) {
+						return this.changePic();
 					}
 
-
-					this.updateCoords();
+					this.setRoundObservation("first", selectedObservations[0]);
+					this.setRoundObservation("second", selectedObservations[1]);
+					this.setRoundObservation("third", selectedObservations[2]);
+					this.setRoundObservation("fourth", selectedObservations[3]);
 				} else {
 					this.timesExecuted = 0;
 					this.warn();
 				}
 			},
-			updateCoords() {
-				var str1 = this.apiResult[0].results[this.firstPageNum].location;
-				str1 = str1.replace(/,/g, " ")
-				this.firstCoords = str1.split(' ');
-
-				var str2 = this.apiResult[1].results[this.secondPageNum].location;
-				str2 = str2.replace(/,/g, " ")
-				this.secondCoords = str2.split(' ');
-
-				var str3 = this.apiResult[2].results[this.thirdPageNum].location;
-				str3 = str3.replace(/,/g, " ")
-				this.thirdCoords = str3.split(' ');
-
-				var str4 = this.apiResult[3].results[this.fourthPageNum].location;
-				str4 = str4.replace(/,/g, " ")
-				this.fourthCoords = str4.split(' ');
-
-			},
-			nextClick() {
-			this.setPages();
-			this.fetchScorpions();
+			async nextClick() {
+			await this.setPages();
+			await this.fetchScorpions();
 
 			if (this.apiResult !== undefined) {
-				console.log(this.apiResult);
 				this.subspecies = undefined;
 				this.species = undefined;
 				this.hideNames();
@@ -252,215 +183,143 @@
 			},
 			async fetchScorpions() {
 			if (this.onStart === 0) this.isLoading = true;
-			Promise.all([
-				await fetch(
-				`${
-					this.url_base
-				}observations?verifiable=true&photos=true&?hrank=species?lrank=species&taxon_id=${
-					this.query
-				}&place_id=&order_by=votes&quality_grade=research&page=${this.randomPage()}&per_page=${
-					this.perpage
-				}`
-				),
-				await fetch(
-				`${
-					this.url_base
-				}observations?verifiable=true&photos=true&?hrank=species?lrank=species&taxon_id=${
-					this.query
-				}&place_id=&order_by=votes&quality_grade=research&page=${this.randomPage()}&per_page=${
-					this.perpage
-				}`
-				),
-				await fetch(
-				`${
-					this.url_base
-				}observations?verifiable=true&photos=true&?hrank=species?lrank=species&taxon_id=${
-					this.query
-				}&place_id=&order_by=votes&quality_grade=research&page=${this.randomPage()}&per_page=${
-					this.perpage
-				}`
-				),
-				await fetch(
-				`${
-					this.url_base
-				}observations?verifiable=true&photos=true&?hrank=species?lrank=species&taxon_id=${
-					this.query
-				}&place_id=&order_by=votes&quality_grade=research&page=${this.randomPage()}&per_page=${
-					this.perpage
-				}`
-				),
-			])
-				.then(function (responses) {
-				return Promise.all(
-					responses.map(function (response) {
-					return response.json();
-					})
-				);
+			
+			// Use the improved API service with proper parameters
+			const fetchPromises = Array(4).fill(null).map(() => 
+				getObservations({
+					taxonId: this.query,
+					page: this.randomPage(),
+					perPage: this.perpage
 				})
-				.then((response) => {
-				this.setResults(response);
+			);
+			
+			try {
+				const responses = await Promise.all(fetchPromises);
+				this.setResults(responses);
 				if (this.onStart === 0) this.isLoading = false;
 				this.onStart = 1;
-				})
-				.catch((err) => {
+			} catch (err) {
 				console.error("error", err);
-				});
+				this.isLoading = false;
+			}
 			},
 			async setPages() {
-			await fetch(
-				`${this.url_base}observations?verifiable=true&photos=true&?hrank=species?lrank=species&taxon_id=${this.query}&place_id=&order_by=votes&quality_grade=research&page=1&per_page=1`
-			)
-				.then((response) => response.json())
-				.then((data) => {
-				if (data.total_results < 10) {
+			try {
+				const count = await getObservationCount(this.query);
+				
+				if (count < 10) {
 					this.isInvalid = true;
 				}
-				if (Math.round(data.total_results / this.perpage) > 1000) {
+				if (Math.round(count / this.perpage) > 1000) {
 					this.pageCount = 1000;
 				} else {
-					this.pageCount = Math.round(
-					data.total_results / this.perpage
-					);
+					this.pageCount = Math.round(count / this.perpage);
 				}
 
 				if (this.pageCount === 0) {
 					this.isInvalid = true;
 				}
-				})
-				.catch((error) => {
+			} catch (error) {
 				console.error("error" + error);
-				});
-			},
-			checkNames() {
-				if (
-					this.apiResult[0].results[this.firstPageNum] === undefined ||
-					this.apiResult[1].results[this.secondPageNum] === undefined ||
-					this.apiResult[2].results[this.thirdPageNum] === undefined ||
-					this.apiResult[3].results[this.fourthPageNum] === undefined
-				) {
-					return this.changePic();
-				}
-
-				var firstTaxa = this.apiResult[0].results[this.firstPageNum].taxon.name;
-				var secondTaxa = this.apiResult[1].results[this.secondPageNum].taxon.name;
-				var thirdTaxa = this.apiResult[2].results[this.thirdPageNum].taxon.name;
-				var fourthTaxa = this.apiResult[3].results[this.fourthPageNum].taxon.name;
-
-				if (
-					firstTaxa === secondTaxa ||
-					firstTaxa === thirdTaxa ||
-					firstTaxa === fourthTaxa ||
-					secondTaxa === thirdTaxa ||
-					secondTaxa === fourthTaxa ||
-					thirdTaxa === fourthTaxa
-				) {
-					return this.changePic();
-				}
+			}
 			},
 			incQuestions() {
 				this.totalQuestions++;
 			},
-			setOrders() {
-				for(var i = 0; i < this.apiResult[0].results[this.firstPageNum].identifications.length; i++) {
-					if (this.apiResult[0].results[this.firstPageNum].identifications[i].category == "supporting")  {
-						for(var k = 0; k < this.apiResult[0].results[this.firstPageNum].identifications[i].taxon.ancestors.length; k++) {
-							if (this.apiResult[0].results[this.firstPageNum].identifications[i].taxon.ancestors[k].rank == "order")  {
-								this.firstOrder = this.apiResult[0].results[this.firstPageNum].identifications[i].taxon.ancestors[k].name
-								break;
-							}
-				}
-
-					}
-				}
-
-				for(var j = 0; j < this.apiResult[1].results[this.secondPageNum].identifications.length; j++) {
-					if (this.apiResult[1].results[this.secondPageNum].identifications[j].category == "supporting")  {
-						for(var h = 0; h < this.apiResult[1].results[this.secondPageNum].identifications[j].taxon.ancestors.length; h++) {
-							if (this.apiResult[1].results[this.secondPageNum].identifications[j].taxon.ancestors[h].rank == "order")  {
-								this.secondOrder = this.apiResult[1].results[this.secondPageNum].identifications[j].taxon.ancestors[h].name
-								break;
-							}
-				}
-
-					}
-				}
-
-				for(var f = 0; f < this.apiResult[2].results[this.thirdPageNum].identifications.length; f++) {
-					if (this.apiResult[2].results[this.thirdPageNum].identifications[f].category == "supporting")  {
-						for(var r = 0; r < this.apiResult[2].results[this.thirdPageNum].identifications[f].taxon.ancestors.length; r++) {
-							if (this.apiResult[2].results[this.thirdPageNum].identifications[f].taxon.ancestors[r].rank == "order")  {
-								this.thirdOrder = this.apiResult[2].results[this.thirdPageNum].identifications[f].taxon.ancestors[r].name
-								break;
-							}
-				}
-
-					}
-				}
-
-				for(var x = 0; x < this.apiResult[3].results[this.fourthPageNum].identifications.length; x++) {
-					if (this.apiResult[3].results[this.fourthPageNum].identifications[x].category == "supporting")  {
-						for(var y = 0; y < this.apiResult[3].results[this.fourthPageNum].identifications[x].taxon.ancestors.length; y++) {
-							if (this.apiResult[3].results[this.fourthPageNum].identifications[x].taxon.ancestors[y].rank == "order")  {
-
-								this.fourthOrder = this.apiResult[3].results[this.fourthPageNum].identifications[x].taxon.ancestors[y].name
-								break;
-							}
-				}
-
-					}
-				}
+			getPracticeMode() {
+				if (this.orderSwitchOn) return "order";
+				if (this.familySwitchOn) return "family";
+				if (this.genusSwitchOn) return "genus";
+				return "species";
 			},
-			setFamilies() {
-				for(var i = 0; i < this.apiResult[0].results[this.firstPageNum].identifications.length; i++) {
-					if (this.apiResult[0].results[this.firstPageNum].identifications[i].category == "supporting")  {
-						for(var k = 0; k < this.apiResult[0].results[this.firstPageNum].identifications[i].taxon.ancestors.length; k++) {
-							if (this.apiResult[0].results[this.firstPageNum].identifications[i].taxon.ancestors[k].rank == "family")  {
-								this.firstFamily = this.apiResult[0].results[this.firstPageNum].identifications[i].taxon.ancestors[k].name
-								break;
-							}
+			getObservationPool() {
+				if (!this.apiResult) return [];
+				return this.apiResult.flatMap((response) => response.results || []);
+			},
+			shuffle(items) {
+				return [...items].sort(() => Math.random() - 0.5);
+			},
+			selectRoundObservations() {
+				const mode = this.getPracticeMode();
+				const candidates = this.shuffle(this.getObservationPool())
+					.map((observation) => this.createRoundCandidate(observation, mode))
+					.filter(Boolean);
+
+				const uniqueSelections = [];
+				const seenAnswers = new Set();
+				candidates.forEach((candidate) => {
+					if (uniqueSelections.length >= 4) return;
+					if (seenAnswers.has(candidate.answerName)) return;
+					seenAnswers.add(candidate.answerName);
+					uniqueSelections.push(candidate);
+				});
+
+				if (uniqueSelections.length >= 4) return uniqueSelections;
+
+				const fallbackSelections = [];
+				const seenObservationIds = new Set();
+				candidates.forEach((candidate) => {
+					if (fallbackSelections.length >= 4) return;
+					if (seenObservationIds.has(candidate.observation.id)) return;
+					seenObservationIds.add(candidate.observation.id);
+					fallbackSelections.push(candidate);
+				});
+				return fallbackSelections;
+			},
+			createRoundCandidate(observation, mode) {
+				if (!observation || !observation.taxon || !observation.photos || !observation.photos[0]) return null;
+
+				const speciesName = observation.taxon.name;
+				const answerName = this.getAnswerName(observation, mode);
+				if (!speciesName || !answerName) return null;
+
+				return {
+					observation,
+					answerName,
+					revealName: mode === "species" ? speciesName : `${answerName}: ${speciesName}`,
+				};
+			},
+			getAnswerName(observation, mode) {
+				if (mode === "species") return observation.taxon.name;
+				if (mode === "genus") return this.getRankName(observation, "genus") || observation.taxon.name.split(" ")[0];
+				return this.getRankName(observation, mode);
+			},
+			getRankName(observation, rank) {
+				const taxon = observation.taxon || {};
+				if (taxon.rank === rank) return taxon.name;
+
+				const ancestor = (taxon.ancestors || []).find((item) => item.rank === rank);
+				if (ancestor) return ancestor.name;
+
+				const identifications = observation.identifications || [];
+				for (let i = 0; i < identifications.length; i++) {
+					const identifiedTaxon = identifications[i].taxon || {};
+					if (identifiedTaxon.rank === rank) return identifiedTaxon.name;
+					const match = (identifiedTaxon.ancestors || []).find((item) => item.rank === rank);
+					if (match) return match.name;
 				}
 
-					}
-				}
-
-				for(var j = 0; j < this.apiResult[1].results[this.secondPageNum].identifications.length; j++) {
-					if (this.apiResult[1].results[this.secondPageNum].identifications[j].category == "supporting")  {
-						for(var h = 0; h < this.apiResult[1].results[this.secondPageNum].identifications[j].taxon.ancestors.length; h++) {
-							if (this.apiResult[1].results[this.secondPageNum].identifications[j].taxon.ancestors[h].rank == "family")  {
-								this.secondFamily = this.apiResult[1].results[this.secondPageNum].identifications[j].taxon.ancestors[h].name
-								break;
-							}
-				}
-
-					}
-				}
-
-				for(var f = 0; f < this.apiResult[2].results[this.thirdPageNum].identifications.length; f++) {
-					if (this.apiResult[2].results[this.thirdPageNum].identifications[f].category == "supporting")  {
-						for(var r = 0; r < this.apiResult[2].results[this.thirdPageNum].identifications[f].taxon.ancestors.length; r++) {
-							if (this.apiResult[2].results[this.thirdPageNum].identifications[f].taxon.ancestors[r].rank == "family")  {
-								this.thirdFamily = this.apiResult[2].results[this.thirdPageNum].identifications[f].taxon.ancestors[r].name
-								break;
-							}
-				}
-
-					}
-				}
-
-				for(var x = 0; x < this.apiResult[3].results[this.fourthPageNum].identifications.length; x++) {
-					if (this.apiResult[3].results[this.fourthPageNum].identifications[x].category == "supporting")  {
-						for(var y = 0; y < this.apiResult[3].results[this.fourthPageNum].identifications[x].taxon.ancestors.length; y++) {
-							if (this.apiResult[3].results[this.fourthPageNum].identifications[x].taxon.ancestors[y].rank == "family")  {
-
-								this.fourthFamily = this.apiResult[3].results[this.fourthPageNum].identifications[x].taxon.ancestors[y].name
-								break;
-							}
-				}
-
-					}
-				}
+				return "";
+			},
+			setRoundObservation(key, candidate) {
+				const observation = candidate.observation;
+				this[key] = this.getMedium(observation.photos[0].url);
+				this[`${key}name`] = candidate.answerName;
+				this[`${key}RevealName`] = candidate.revealName;
+				this[`${key}Date`] = observation.observed_on;
+				this[`${key}User`] = observation.user ? observation.user.login : "";
+				this[`${key}Link`] = observation.uri;
+				this[`${key}Coords`] = this.parseCoords(observation.location);
+			},
+			parseCoords(location) {
+				if (!location) return [];
+				return location.replace(/,/g, " ").split(" ").filter(Boolean);
 			},
 			calcAcc() {
+				if (this.totalQuestions === 0) {
+					this.acc = 0;
+					return;
+				}
 				this.acc = Math.round(((this.score / this.totalQuestions) * 100) * 100) / 100;
 			},
 			setNames() {
@@ -476,7 +335,7 @@
 			getRandomPageObsNums() {
 				var randoms = [];
 				while (randoms.length < 4) {
-					var r = Math.floor(Math.random() * 10) + 1;
+					var r = Math.floor(Math.random() * this.perpage);
 					if (randoms.indexOf(r) === -1) randoms.push(r);
 				}
 				this.firstPageNum = randoms[0];
@@ -499,7 +358,7 @@
 				}
 			},
 			getMedium(string) {
-				var newString = string.replace("square", "medium");
+				var newString = string.replace(/square|small|medium/g, "large");
 				return newString;
 			},
 			getWarnInterface(warnInterface) {
@@ -586,23 +445,28 @@
 		margin: 0;
 		padding: 0;
 		min-height: 100vh;
-		background-color: $dark;
+		background-color: $app-bg;
 	}
 
 	.container {
 		display: flex;
 		flex-direction: column;
+		height: 100vh;
+		overflow: hidden;
 	}
 
 	.main-screen {
 		display: flex;
+		flex: 1;
+		min-height: calc(100vh - #{$header-height});
+		min-height: 0;
+		overflow: hidden;
 	}
 
 	@media (max-width: 960px) {
 		.main-screen {
-			height: calc(100vh - 70px);
-			display: flex;
 			flex-direction: column-reverse;
+			min-height: 0;
 		}
 	}
 </style>

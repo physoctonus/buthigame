@@ -1,56 +1,61 @@
 <template>
-	<div class="modal" v-if="showGuide">
-		<div class="modal__backdrop" @click=" closeGuideModal() " />
-		<div class="modal__dialog">
-			<div class="modal__body">
-				<ul>
-					<li>Type any taxa besides species in the input (class, family, genus)</li>
-					<li>Click 'get' button and make sure the text says valid</li>
-					<li>Start</li>
-					<li>Wait for loading to finish, then click next</li>
-					<li>For unclear photos, press next to skip</li>
-					<li>Use iNaturalist taxon id's if dealing with duplicate taxonomy</li>
-					<li>Practice your identification skills and enjoy!</li>
-				</ul>
-			</div>
-			<div class="modal__footer">
-				<p>developed by poizoni</p>
-				<button type="button" class="modal__close" @click="closeGuideModal()">
-					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 352 512">
-						<path fill="currentColor" d="M242.72 256l100.07-100.07c12.28-12.28 12.28-32.19 0-44.48l-22.24-22.24c-12.28-12.28-32.19-12.28-44.48 0L176 189.28 75.93 89.21c-12.28-12.28-32.19-12.28-44.48 0L9.21 111.45c-12.28 12.28-12.28 32.19 0 44.48L109.28 256 9.21 356.07c-12.28 12.28-12.28 32.19 0 44.48l22.24 22.24c12.28 12.28 32.2 12.28 44.48 0L176 322.72l100.07 100.07c12.28 12.28 32.2 12.28 44.48 0l22.24-22.24c12.28-12.28 12.28-32.19 0-44.48L242.72 256z"></path>
+	<div class="modal" v-if="showGuide" role="dialog" aria-modal="true" aria-labelledby="guide-title">
+		<button class="modal__backdrop" type="button" aria-label="Close guide" @click="closeGuideModal" />
+		<section class="modal__dialog">
+			<header class="modal__header">
+				<div>
+					<p class="eyebrow">How to play</p>
+					<h2 id="guide-title">Practice by matching the target taxon.</h2>
+				</div>
+				<button type="button" class="icon-button" aria-label="Close guide" @click="closeGuideModal">
+					<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+						<path d="M18 6 6 18" />
+						<path d="m6 6 12 12" />
 					</svg>
 				</button>
-			</div>
-		</div>
+			</header>
+
+			<ol class="steps">
+				<li>Search for a class, order, family, genus, or iNaturalist taxon ID.</li>
+				<li>Press Start, then choose the photo that matches the taxon shown at the top.</li>
+				<li>After answering, review the names, map locations, and source observations.</li>
+				<li>Use Family or Order mode when you want broader identification practice.</li>
+			</ol>
+
+			<footer class="modal__footer">
+				<span>Developed by William Phillips</span>
+				<button type="button" class="primary-button" @click="closeGuideModal">Start practicing</button>
+			</footer>
+		</section>
 	</div>
 </template>
 
 <script>
 	export default {
-	name: "ButhiGuideModal",
-	mounted() {
-		this.emitInterface();
-	},
-	data() {
-		return {
-		showGuide: false,
-		};
-	},
-	methods: {
-		closeGuideModal() {
-		this.showGuide = false;
-		document.querySelector("body").classList.remove("overflow-hidden");
+		name: "ButhiGuideModal",
+		mounted() {
+			this.emitInterface();
 		},
-		openGuideModal() {
-		this.showGuide = true;
-		document.querySelector("body").classList.add("overflow-hidden");
+		data() {
+			return {
+				showGuide: false,
+			};
 		},
-		emitInterface() {
-		this.$emit("interface", {
-			openGuideModal: () => this.openGuideModal(),
-		});
+		methods: {
+			closeGuideModal() {
+				this.showGuide = false;
+				document.querySelector("body").classList.remove("overflow-hidden");
+			},
+			openGuideModal() {
+				this.showGuide = true;
+				document.querySelector("body").classList.add("overflow-hidden");
+			},
+			emitInterface() {
+				this.$emit("interface", {
+					openGuideModal: () => this.openGuideModal(),
+				});
+			},
 		},
-	},
 	};
 </script>
 
@@ -58,85 +63,108 @@
 	@import "@/assets/global.scss";
 
 	.modal {
-	position: fixed;
-	top: 0;
-	right: 0;
-	bottom: 0;
-	left: 0;
-	z-index: 9;
-	overflow-x: hidden;
-	overflow-y: auto;
-	&__backdrop {
 		position: fixed;
-		top: 0;
-		right: 0;
-		bottom: 0;
-		left: 0;
-		background-color: rgba(0, 0, 0, 0.3);
-		z-index: 1;
-	}
-	&__dialog {
-		position: relative;
-		width: 600px;
-		background-color: $dark4;
-		color: $light2;
-		font-family: "Andale Mono", monospace;
-		border-radius: 5px;
-		margin: 50px auto;
-		display: flex;
-		flex-direction: column;
-		z-index: 2;
-		@media screen and (max-width: 992px) {
-		width: 90%;
-		}
-	}
-	&__close {
-		width: 30px;
-		height: 30px;
-		background-color: $light2;
-		border: none;
-		border-radius: 4px;
-		transition: 0.1s;
-		cursor: pointer;
-	}
-	&__close:hover {
-		border: 2px solid $dark4;
-	}
-	&__close:active {
-		border: 4px solid $dark4;
+		inset: 0;
+		z-index: $z-modal;
+		display: grid;
+		place-items: center;
+		padding: 18px;
 	}
 
-	&__header {
-		font-size: 40px;
-		display: flex;
-		align-items: flex-end;
-		justify-content: flex-end;
-		padding: 20px 20px 10px;
+	.modal__backdrop {
+		position: fixed;
+		inset: 0;
+		border: 0;
+		background: rgba(49, 39, 30, 0.34);
+		backdrop-filter: blur(10px);
+		cursor: pointer;
 	}
-	&__body {
-		font-size: 19px;
-		padding: 10px 20px 10px;
-		overflow: auto;
+
+	.modal__dialog {
+		position: relative;
+		width: min(620px, 100%);
+		padding: 22px;
+		background: $surface;
+		border: 1px solid $border-color;
+		border-radius: 22px;
+		box-shadow: $shadow-lg;
+		animation: scaleIn 180ms ease;
+	}
+
+	.modal__header {
 		display: flex;
-		flex-direction: column;
-		align-items: stretch;
-		li {
-		margin: 10px 0;
+		align-items: flex-start;
+		justify-content: space-between;
+		gap: 16px;
+
+		h2 {
+			margin: 3px 0 0;
+			font-size: 1.45rem;
+			line-height: 1.2;
 		}
 	}
-	&__footer {
+
+	.eyebrow {
+		margin: 0;
+		color: $accent-primary;
+		font-size: 0.78rem;
+		font-weight: $font-weight-bold;
+		text-transform: uppercase;
+	}
+
+	.steps {
+		display: grid;
+		gap: 12px;
+		margin: 20px 0;
+		padding-left: 22px;
+		color: $text-secondary;
+		line-height: 1.5;
+	}
+
+	.modal__footer {
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
-		padding: 10px 20px 20px;
+		gap: 12px;
+		color: $text-muted;
+		font-size: 0.88rem;
 	}
+
+	.icon-button,
+	.primary-button {
+		border: 0;
+		cursor: pointer;
 	}
-	.fade-enter-active,
-	.fade-leave-active {
-	transition: opacity 0.2s;
+
+	.icon-button {
+		display: grid;
+		place-items: center;
+		width: 36px;
+		height: 36px;
+		color: $text-secondary;
+		background: $surface-soft;
+		border-radius: 50%;
+
+		svg {
+			width: 18px;
+			height: 18px;
+		}
 	}
-	.fade-enter,
-	.fade-leave-to {
-	opacity: 0;
+
+	.primary-button {
+		min-height: 42px;
+		padding: 0 16px;
+		color: white;
+		background: $text-primary;
+		border-radius: 13px;
+		font-weight: $font-weight-bold;
+		white-space: nowrap;
+	}
+
+	@media (max-width: 520px) {
+		.modal__footer {
+			align-items: stretch;
+			flex-direction: column;
+		}
 	}
 </style>

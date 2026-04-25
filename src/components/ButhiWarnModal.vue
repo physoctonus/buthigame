@@ -1,18 +1,28 @@
 <template>
-		<div class="modal" v-if="showWarn">
-			<div class="modal__backdrop" @click=" closeWarnModal() " />
-			<div class="modal__dialog">
-				<div class="modal__body"> WARNING </div>
-				<div class="modal__footer">
-					<p>not many photos available, <br> functionality may be problematic with this taxa </p>
-					<button type="button" class="modal__close" @click="closeWarnModal()">
-						<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 352 512">
-							<path fill="currentColor" d="M242.72 256l100.07-100.07c12.28-12.28 12.28-32.19 0-44.48l-22.24-22.24c-12.28-12.28-32.19-12.28-44.48 0L176 189.28 75.93 89.21c-12.28-12.28-32.19-12.28-44.48 0L9.21 111.45c-12.28 12.28-12.28 32.19 0 44.48L109.28 256 9.21 356.07c-12.28 12.28-12.28 32.19 0 44.48l22.24 22.24c12.28 12.28 32.2 12.28 44.48 0L176 322.72l100.07 100.07c12.28 12.28 32.2 12.28 44.48 0l22.24-22.24c12.28-12.28 12.28-32.19 0-44.48L242.72 256z"></path>
-						</svg>
-					</button>
+	<div class="modal" v-if="showWarn" role="dialog" aria-modal="true" aria-labelledby="warning-title">
+		<button class="modal__backdrop" type="button" aria-label="Close warning" @click="closeWarnModal" />
+		<section class="modal__dialog">
+			<header class="modal__header">
+				<div>
+					<p class="eyebrow">Heads up</p>
+					<h2 id="warning-title">This taxon has limited photos</h2>
 				</div>
-			</div>
-		</div>
+				<button type="button" class="icon-button" aria-label="Close warning" @click="closeWarnModal">
+					<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+						<path d="M18 6 6 18" />
+						<path d="m6 6 12 12" />
+					</svg>
+				</button>
+			</header>
+			<p class="modal__body">
+				There may not be enough high-quality observations to keep generating distinct choices.
+				Try a broader taxon if rounds begin repeating.
+			</p>
+			<footer class="modal__footer">
+				<button type="button" class="primary-button" @click="closeWarnModal">Got it</button>
+			</footer>
+		</section>
+	</div>
 </template>
 
 <script>
@@ -35,7 +45,6 @@
 				this.showWarn = true;
 				document.querySelector("body").classList.add("overflow-hidden");
 			},
-
 			emitInterface() {
 				this.$emit("interface", {
 					openWarnModal: () => this.openWarnModal(),
@@ -46,88 +55,96 @@
 </script>
 
 <style lang="scss" scoped>
-	@import '@/assets/global.scss';
+	@import "@/assets/global.scss";
 
 	.modal {
 		position: fixed;
-		top: 0;
-		right: 0;
-		bottom: 0;
-		left: 0;
-		z-index: 9;
-		overflow-x: hidden;
-		overflow-y: auto;
-		&__backdrop {
-			position: fixed;
-			top: 0;
-			right: 0;
-			bottom: 0;
-			left: 0;
-			background-color: rgba(0, 0, 0, 0.3);
-			z-index: 1;
-		}
-		&__dialog {
-			position: relative;
-			width: 600px;
-			background-color: $dark4;
-			color: $light2;
-			font-family: "Andale Mono", monospace;
-			border-radius: 5px;
-			margin: 50px auto;
-			display: flex;
-			flex-direction: column;
-			z-index: 2;
-			@media screen and (max-width: 992px) {
-				width: 90%;
-			}
-		}
-		&__close {
-			width: 30px;
-			height: 30px;
-			background-color: $light2;
-			border: none;
-			border-radius: 4px;
-			transition: 0.1s;
-			cursor: pointer;
-		}
-		&__close:hover {
-			border: 2px solid $dark4;
-		}
-		&__close:active {
-			border: 4px solid $dark4;
-		}
+		inset: 0;
+		z-index: $z-modal;
+		display: grid;
+		place-items: center;
+		padding: 18px;
+	}
 
-		&__header {
-			font-size: 40px;
-			display: flex;
-			align-items: flex-end;
-			justify-content: flex-end;
-			padding: 20px 20px 10px;
-		}
-		&__body {
-			font-size: 19px;
-			padding: 10px 20px 10px;
-			overflow: auto;
-			display: flex;
-			flex-direction: column;
-			align-items: stretch;
-			li {
-				margin: 10px 0;
-			}
-		}
-		&__footer {
-			display: flex;
-			align-items: center;
-			justify-content: space-between;
-			padding: 10px 20px 20px;
+	.modal__backdrop {
+		position: fixed;
+		inset: 0;
+		border: 0;
+		background: rgba(49, 39, 30, 0.34);
+		backdrop-filter: blur(10px);
+		cursor: pointer;
+	}
+
+	.modal__dialog {
+		position: relative;
+		width: min(520px, 100%);
+		padding: 20px;
+		background: $surface;
+		border: 1px solid $border-color;
+		border-radius: 22px;
+		box-shadow: $shadow-lg;
+		animation: scaleIn 180ms ease;
+	}
+
+	.modal__header {
+		display: flex;
+		align-items: flex-start;
+		justify-content: space-between;
+		gap: 16px;
+
+		h2 {
+			margin: 3px 0 0;
+			font-size: 1.35rem;
 		}
 	}
-	.fade-enter-active,
-	.fade-leave-active {
-		transition: opacity 0.2s;
+
+	.eyebrow {
+		margin: 0;
+		color: $accent-warm;
+		font-size: 0.78rem;
+		font-weight: $font-weight-bold;
+		text-transform: uppercase;
 	}
-	.fade-enter,
-	.fade-leave-to {
-		opacity: 0;
+
+	.modal__body {
+		margin: 14px 0 0;
+		color: $text-secondary;
+		line-height: 1.55;
+	}
+
+	.modal__footer {
+		display: flex;
+		justify-content: flex-end;
+		margin-top: 18px;
+	}
+
+	.icon-button,
+	.primary-button {
+		border: 0;
+		cursor: pointer;
+	}
+
+	.icon-button {
+		display: grid;
+		place-items: center;
+		width: 36px;
+		height: 36px;
+		color: $text-secondary;
+		background: $surface-soft;
+		border-radius: 50%;
+
+		svg {
+			width: 18px;
+			height: 18px;
+		}
+	}
+
+	.primary-button {
+		min-height: 42px;
+		padding: 0 16px;
+		color: white;
+		background: $text-primary;
+		border-radius: 13px;
+		font-weight: $font-weight-bold;
 	}
 </style>
