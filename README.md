@@ -6,7 +6,7 @@ Randomized observation photos are fetched and displayed along with location / ta
 
 ## Website
 
- [buthidae.pics](https://buthidae.pics/)
+https://physoctonus.github.io/buthigame/
 
 ## Usage
 
